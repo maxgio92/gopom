@@ -1,7 +1,7 @@
 # gopom - a maven pom.xml parser
 
-![Tests](https://github.com/vifraa/gopom/workflows/Tests/badge.svg)
-![Go Report Card](https://goreportcard.com/badge/github.com/vifraa/gopom)
+![Tests](https://github.com/2000Slash/gopom/workflows/Tests/badge.svg)
+![Go Report Card](https://goreportcard.com/badge/github.com/2000Slash/gopom)
 
 gopom is a Golang module to easily parse and work with maven pom.xml files.
 
@@ -9,7 +9,7 @@ Supports the offical pom.xml structure that can be read about [here](https://mav
 ## Installation
 
 ```bash
-go get -u github.com/vifraa/gopom
+go get -u github.com/2000Slash/gopom
 ```
 
 
@@ -20,7 +20,7 @@ See below for example:
 package main
 
 import (
-	"github.com/vifraa/gopom"
+	"github.com/2000Slash/gopom"
 	"log"
 )
 
@@ -41,7 +41,7 @@ package main
 
 import (
 	"encoding/xml"
-	"github.com/vifraa/gopom"
+	"github.com/2000Slash/gopom"
 	"log"
 )
 
@@ -56,6 +56,29 @@ func main() {
 }
 ```
 
+You can also marshal the project back to an xml:
+```go
+package main
+
+import (
+	"fmt"
+	"log"
+
+	"github.com/2000Slash/gopom"
+)
+
+func main() {
+
+	var pomPath string = "./pom.xml"
+	parsedPom, err := gopom.Parse(pomPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	output, _ := parsedPom.Marshal()
+	fmt.Println(string(output))
+}
+```
+
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
@@ -64,6 +87,7 @@ Please make sure to update tests as appropriate.
 
 ## License
 
-Copyright (c) 2020-present [Viktor Franzén](https://github.com/vifraa)
+Original work Copyright (c) 2020-present [Viktor Franzén](https://github.com/vifraa)
+Modified work Copyright (c) 2021 [Nils Hartmann](https://github.com/2000Slash)
 
 Licensed under [MIT License](./LICENSE)
