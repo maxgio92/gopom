@@ -334,13 +334,14 @@ type PluginManagement struct {
 }
 
 type Plugin struct {
-	GroupID      string             `xml:"groupId,omitempty"`
-	ArtifactID   string             `xml:"artifactId,omitempty"`
-	Version      string             `xml:"version,omitempty"`
-	Extensions   string             `xml:"extensions,omitempty"`
-	Executions   *[]PluginExecution `xml:"executions>execution,omitempty"`
-	Dependencies *[]Dependency      `xml:"dependencies>dependency,omitempty"`
-	Inherited    string             `xml:"inherited,omitempty"`
+	GroupID       string             `xml:"groupId,omitempty"`
+	ArtifactID    string             `xml:"artifactId,omitempty"`
+	Version       string             `xml:"version,omitempty"`
+	Extensions    string             `xml:"extensions,omitempty"`
+	Executions    *[]PluginExecution `xml:"executions>execution,omitempty"`
+	Dependencies  *[]Dependency      `xml:"dependencies>dependency,omitempty"`
+	Inherited     string             `xml:"inherited,omitempty"`
+	Configuration *Properties        `xml:"configuration,omitempty"`
 }
 
 type PluginExecution struct {
