@@ -6,6 +6,12 @@
 gopom is a Golang module to easily parse and work with maven pom.xml files.
 
 Supports the offical pom.xml structure that can be read about [here](https://maven.apache.org/ref/3.6.3/maven-model/maven.html).
+
+# Modifications and why
+
+This is forked from: github.com/2000Slash/gopom, but with the mod to round trip the Configuration correctly (for example Plugin.Configuration). Correctly for my use case is not worrying about turning it into modifiable struct, but that it roundtrips correctly (parse, modify some bits, then marshal), should produce a diff that makes sense. With the upstream, it drops a bunch of stuff unless it's a strict key/value list.
+
+
 ## Installation
 
 ```bash
