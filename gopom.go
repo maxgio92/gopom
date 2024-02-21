@@ -265,8 +265,8 @@ type Dependency struct {
 }
 
 type Exclusion struct {
-	ArtifactID string `xml:"artifactId,omitempty"`
 	GroupID    string `xml:"groupId,omitempty"`
+	ArtifactID string `xml:"artifactId,omitempty"`
 }
 
 type Repository struct {
@@ -333,6 +333,20 @@ type PluginManagement struct {
 	Plugins *[]Plugin `xml:"plugins>plugin,omitempty"`
 }
 
+// Configuration is a raw XML configuration that we currently do not muck with.
+// It's supposed to be a DOM object, but upstream uses map[string]string for
+// properties, and it does not work. For now, just keep it as a string so we
+// can marshal it out untouched.
+// TODO: This should be a DOM object.
+// TODO: For some reason this loses the following XML attributes (probably all
+// attributes):
+// <configuration combine.children="merge">
+// When marshalled, it is just:
+// <configuration>
+type Configuration struct {
+	RawConfiguration string `xml:",innerxml"`
+}
+
 type Plugin struct {
 	GroupID       string             `xml:"groupId,omitempty"`
 	ArtifactID    string             `xml:"artifactId,omitempty"`
@@ -341,7 +355,7 @@ type Plugin struct {
 	Executions    *[]PluginExecution `xml:"executions>execution,omitempty"`
 	Dependencies  *[]Dependency      `xml:"dependencies>dependency,omitempty"`
 	Inherited     string             `xml:"inherited,omitempty"`
-	Configuration *Properties        `xml:"configuration,omitempty"`
+	Configuration *Configuration     `xml:"configuration,omitempty"`
 }
 
 type PluginExecution struct {
