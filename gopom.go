@@ -102,6 +102,10 @@ type ProjectMarshal struct {
 
 type Properties struct {
 	Entries map[string]string
+	// To preserve ordering when marshalling, we need to keep track of the
+	// order. I'm sure there's a better way to do this, but this will suffice
+	// for now.
+	Order []string
 }
 
 func (p *Properties) UnmarshalXML(d *xml.Decoder, start xml.StartElement) (err error) {
@@ -115,6 +119,7 @@ func (p *Properties) UnmarshalXML(d *xml.Decoder, start xml.StartElement) (err e
 	for err = d.Decode(&e); err == nil; err = d.Decode(&e) {
 		e.Key = e.XMLName.Local
 		p.Entries[e.Key] = e.Value
+		p.Order = append(p.Order, e.Key)
 	}
 	if err != nil && err != io.EOF {
 		return err
@@ -126,9 +131,10 @@ func (p *Properties) UnmarshalXML(d *xml.Decoder, start xml.StartElement) (err e
 func (p Properties) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 	tokens := []xml.Token{start}
 
-	for k, v := range p.Entries {
-		t := xml.StartElement{Name: xml.Name{"", k}}
-		tokens = append(tokens, t, xml.CharData(v), xml.EndElement{t.Name})
+	for _, name := range p.Order {
+		//for k, v := range p.Entries {
+		t := xml.StartElement{Name: xml.Name{"", name}}
+		tokens = append(tokens, t, xml.CharData(p.Entries[name]), xml.EndElement{t.Name})
 	}
 
 	tokens = append(tokens, xml.EndElement{start.Name})
