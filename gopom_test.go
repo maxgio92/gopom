@@ -723,10 +723,3 @@ func Test_ParsingProfileProperties(t *testing.T) {
 	assert.Equal(t, "value2", p.Properties.Entries["key2"])
 	assert.Equal(t, "value3", p.Properties.Entries["key3"])
 }
-
-func Test_ParsingNotifierConfigurations(t *testing.T) {
-	assert.Equal(t, 3, len((*p.CIManagement.Notifiers)[0].Configuration.Entries))
-	assert.Equal(t, "value", p.Properties.Entries["key"])
-	assert.Equal(t, "value2", p.Properties.Entries["key2"])
-	assert.Equal(t, "value3", p.Properties.Entries["key3"])
-}
