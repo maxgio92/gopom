@@ -102,6 +102,10 @@ type ProjectMarshal struct {
 
 type Properties struct {
 	Entries map[string]string
+	// To preserve ordering when marshalling, we need to keep track of the
+	// order. I'm sure there's a better way to do this, but this will suffice
+	// for now.
+	Order []string
 }
 
 func (p *Properties) UnmarshalXML(d *xml.Decoder, start xml.StartElement) (err error) {
@@ -115,6 +119,7 @@ func (p *Properties) UnmarshalXML(d *xml.Decoder, start xml.StartElement) (err e
 	for err = d.Decode(&e); err == nil; err = d.Decode(&e) {
 		e.Key = e.XMLName.Local
 		p.Entries[e.Key] = e.Value
+		p.Order = append(p.Order, e.Key)
 	}
 	if err != nil && err != io.EOF {
 		return err
@@ -126,9 +131,10 @@ func (p *Properties) UnmarshalXML(d *xml.Decoder, start xml.StartElement) (err e
 func (p Properties) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 	tokens := []xml.Token{start}
 
-	for k, v := range p.Entries {
-		t := xml.StartElement{Name: xml.Name{"", k}}
-		tokens = append(tokens, t, xml.CharData(v), xml.EndElement{t.Name})
+	for _, name := range p.Order {
+		//for k, v := range p.Entries {
+		t := xml.StartElement{Name: xml.Name{"", name}}
+		tokens = append(tokens, t, xml.CharData(p.Entries[name]), xml.EndElement{t.Name})
 	}
 
 	tokens = append(tokens, xml.EndElement{start.Name})
@@ -217,13 +223,13 @@ type CIManagement struct {
 }
 
 type Notifier struct {
-	Type          string      `xml:"type,omitempty"`
-	SendOnError   bool        `xml:"sendOnError,omitempty"`
-	SendOnFailure bool        `xml:"sendOnFailure,omitempty"`
-	SendOnSuccess bool        `xml:"sendOnSuccess,omitempty"`
-	SendOnWarning bool        `xml:"sendOnWarning,omitempty"`
-	Address       string      `xml:"address,omitempty"`
-	Configuration *Properties `xml:"configuration,omitempty"`
+	Type          string         `xml:"type,omitempty"`
+	SendOnError   bool           `xml:"sendOnError,omitempty"`
+	SendOnFailure bool           `xml:"sendOnFailure,omitempty"`
+	SendOnSuccess bool           `xml:"sendOnSuccess,omitempty"`
+	SendOnWarning bool           `xml:"sendOnWarning,omitempty"`
+	Address       string         `xml:"address,omitempty"`
+	Configuration *Configuration `xml:"configuration,omitempty"`
 }
 
 type DistributionManagement struct {
@@ -265,8 +271,8 @@ type Dependency struct {
 }
 
 type Exclusion struct {
-	ArtifactID string `xml:"artifactId,omitempty"`
 	GroupID    string `xml:"groupId,omitempty"`
+	ArtifactID string `xml:"artifactId,omitempty"`
 }
 
 type Repository struct {
@@ -333,6 +339,20 @@ type PluginManagement struct {
 	Plugins *[]Plugin `xml:"plugins>plugin,omitempty"`
 }
 
+// Configuration is a raw XML configuration that we currently do not muck with.
+// It's supposed to be a DOM object, but upstream uses map[string]string for
+// properties, and it does not work. For now, just keep it as a string so we
+// can marshal it out untouched.
+// TODO: This should be a DOM object.
+// TODO: For some reason this loses the following XML attributes (probably all
+// attributes):
+// <configuration combine.children="merge">
+// When marshalled, it is just:
+// <configuration>
+type Configuration struct {
+	RawConfiguration string `xml:",innerxml"`
+}
+
 type Plugin struct {
 	GroupID       string             `xml:"groupId,omitempty"`
 	ArtifactID    string             `xml:"artifactId,omitempty"`
@@ -341,14 +361,15 @@ type Plugin struct {
 	Executions    *[]PluginExecution `xml:"executions>execution,omitempty"`
 	Dependencies  *[]Dependency      `xml:"dependencies>dependency,omitempty"`
 	Inherited     string             `xml:"inherited,omitempty"`
-	Configuration *Properties        `xml:"configuration,omitempty"`
+	Configuration *Configuration     `xml:"configuration,omitempty"`
 }
 
 type PluginExecution struct {
-	ID        string    `xml:"id,omitempty"`
-	Phase     string    `xml:"phase,omitempty"`
-	Goals     *[]string `xml:"goals>goal,omitempty"`
-	Inherited string    `xml:"inherited,omitempty"`
+	ID            string         `xml:"id,omitempty"`
+	Phase         string         `xml:"phase,omitempty"`
+	Goals         *[]string      `xml:"goals>goal,omitempty"`
+	Inherited     string         `xml:"inherited,omitempty"`
+	Configuration *Configuration `xml:"configuration,omitempty"`
 }
 
 type Reporting struct {
