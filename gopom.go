@@ -223,13 +223,13 @@ type CIManagement struct {
 }
 
 type Notifier struct {
-	Type          string      `xml:"type,omitempty"`
-	SendOnError   bool        `xml:"sendOnError,omitempty"`
-	SendOnFailure bool        `xml:"sendOnFailure,omitempty"`
-	SendOnSuccess bool        `xml:"sendOnSuccess,omitempty"`
-	SendOnWarning bool        `xml:"sendOnWarning,omitempty"`
-	Address       string      `xml:"address,omitempty"`
-	Configuration *Properties `xml:"configuration,omitempty"`
+	Type          string         `xml:"type,omitempty"`
+	SendOnError   bool           `xml:"sendOnError,omitempty"`
+	SendOnFailure bool           `xml:"sendOnFailure,omitempty"`
+	SendOnSuccess bool           `xml:"sendOnSuccess,omitempty"`
+	SendOnWarning bool           `xml:"sendOnWarning,omitempty"`
+	Address       string         `xml:"address,omitempty"`
+	Configuration *Configuration `xml:"configuration,omitempty"`
 }
 
 type DistributionManagement struct {
@@ -365,10 +365,11 @@ type Plugin struct {
 }
 
 type PluginExecution struct {
-	ID        string    `xml:"id,omitempty"`
-	Phase     string    `xml:"phase,omitempty"`
-	Goals     *[]string `xml:"goals>goal,omitempty"`
-	Inherited string    `xml:"inherited,omitempty"`
+	ID            string         `xml:"id,omitempty"`
+	Phase         string         `xml:"phase,omitempty"`
+	Goals         *[]string      `xml:"goals>goal,omitempty"`
+	Inherited     string         `xml:"inherited,omitempty"`
+	Configuration *Configuration `xml:"configuration,omitempty"`
 }
 
 type Reporting struct {
