@@ -2,8 +2,8 @@ package gopom
 
 import (
 	"encoding/xml"
+	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 )
 
@@ -14,7 +14,7 @@ func Parse(path string) (*Project, error) {
 	}
 	defer file.Close()
 
-	b, _ := ioutil.ReadAll(file)
+	b, _ := io.ReadAll(file)
 	var project Project
 
 	err = xml.Unmarshal(b, &project)
@@ -24,51 +24,40 @@ func Parse(path string) (*Project, error) {
 	return &project, nil
 }
 
+// Marshal marshals the Project struct into a byte slice.
+// Note that you must use this to get the correct XML output, as the
+// attributes require special handling. Or there's a bug in the struct
+// definition, but I don't know what it is.
 func (p *Project) Marshal() ([]byte, error) {
-	return xml.MarshalIndent(ProjectMarshal(*p), "", "    ")
+	// Set these appropriately for marshalling purposes.
+	p.SchemaLocationXSI = p.SchemaLocation
+	p.XsiNS = p.Xsi
+	p.SchemaLocation = ""
+	p.Xsi = ""
+	marshalled, err := xml.MarshalIndent(p, "", "    ")
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal: %w", err)
+	}
+	header := []byte(xml.Header)
+	return append(header, marshalled...), nil
 }
 
 type Project struct {
-	XMLName                xml.Name                `xml:"project,omitempty"`
-	Xmlns                  string                  `xml:"xmlns,attr,omitempty"`
-	Xsi                    string                  `xml:"xsi,attr,omitempty"`
-	SchemaLocation         string                  `xml:"schemaLocation,attr,omitempty"`
-	ModelVersion           string                  `xml:"modelVersion,omitempty"`
-	GroupID                string                  `xml:"groupId,omitempty"`
-	ArtifactID             string                  `xml:"artifactId,omitempty"`
-	Version                string                  `xml:"version,omitempty"`
-	Packaging              string                  `xml:"packaging,omitempty"`
-	Name                   string                  `xml:"name,omitempty"`
-	Description            string                  `xml:"description,omitempty"`
-	URL                    string                  `xml:"url,omitempty"`
-	InceptionYear          string                  `xml:"inceptionYear,omitempty"`
-	Organization           *Organization           `xml:"organization,omitempty"`
-	Licenses               *[]License              `xml:"licenses>license,omitempty"`
-	Developers             *[]Developer            `xml:"developers>developer,omitempty"`
-	Contributors           *[]Contributor          `xml:"contributors>contributor,omitempty"`
-	MailingLists           *[]MailingList          `xml:"mailingLists>mailingList,omitempty"`
-	Prerequisites          *Prerequisites          `xml:"prerequisites,omitempty"`
-	Properties             *Properties             `xml:"properties,omitempty"`
-	Parent                 *Parent                 `xml:"parent,omitempty"`
-	Modules                *[]string               `xml:"modules>module,omitempty"`
-	SCM                    *Scm                    `xml:"scm,omitempty"`
-	IssueManagement        *IssueManagement        `xml:"issueManagement,omitempty"`
-	CIManagement           *CIManagement           `xml:"ciManagement,omitempty"`
-	DistributionManagement *DistributionManagement `xml:"distributionManagement,omitempty"`
-	DependencyManagement   *DependencyManagement   `xml:"dependencyManagement,omitempty"`
-	Dependencies           *[]Dependency           `xml:"dependencies>dependency,omitempty"`
-	Repositories           *[]Repository           `xml:"repositories>repository,omitempty"`
-	PluginRepositories     *[]PluginRepository     `xml:"pluginRepositories>pluginRepository,omitempty"`
-	Build                  *Build                  `xml:"build,omitempty"`
-	Reporting              *Reporting              `xml:"reporting,omitempty"`
-	Profiles               *[]Profile              `xml:"profiles>profile,omitempty"`
-}
-
-type ProjectMarshal struct {
-	XMLName                xml.Name                `xml:"project,omitempty"`
-	Xmlns                  string                  `xml:"xmlns,attr,omitempty"`
-	Xsi                    string                  `xml:"xmlns:xsi,attr,omitempty"`
-	SchemaLocation         string                  `xml:"xsi:schemaLocation,attr,omitempty"`
+	XMLName xml.Name `xml:"project,omitempty"`
+	Xmlns   string   `xml:"xmlns,attr"`
+	Xsi     string   `xml:"xsi,attr,omitempty"`
+	// This is the variant of the above. In the POM, it's `xmlns:xsi`,
+	// it gets parsed into `xsi`, so we have this so that when we
+	// marshal the attribute has the right name. I'm sure it's something that's
+	// wrong, but I don't know how to fix this.
+	// Previous version had entirely separate struct for Marshalling,
+	XsiNS          string `xml:"xmlns:xsi,attr,omitempty"`
+	SchemaLocation string `xml:"schemaLocation,attr,omitempty"`
+	// This is the variant of the above. In the POM, it's `xsi:schemaLocation`,
+	// it gets parsed into `schemaLocation`, so we have this so that when we
+	// marshal the attribute has the right name. I'm sure it's something that's
+	// wrong, but I don't know how to fix this.
+	SchemaLocationXSI      string                  `xml:"xsi:schemaLocation,attr,omitempty"`
 	ModelVersion           string                  `xml:"modelVersion,omitempty"`
 	GroupID                string                  `xml:"groupId,omitempty"`
 	ArtifactID             string                  `xml:"artifactId,omitempty"`
@@ -132,7 +121,6 @@ func (p Properties) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 	tokens := []xml.Token{start}
 
 	for _, name := range p.Order {
-		//for k, v := range p.Entries {
 		t := xml.StartElement{Name: xml.Name{"", name}}
 		tokens = append(tokens, t, xml.CharData(p.Entries[name]), xml.EndElement{t.Name})
 	}
