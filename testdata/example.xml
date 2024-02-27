@@ -1,21 +1,19 @@
-package gopom
-
-var examplePom = `
-<project>
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
- 
+
   <parent>
     <groupId>com.test</groupId>
     <artifactId>test-application</artifactId>
     <version>1.0.0</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
- 
+
   <groupId>com.test</groupId>
   <artifactId>test-application</artifactId>
   <version>1.0.0</version>
   <packaging>war</packaging>
- 
+
   <name>gopom-test</name>
   <description>pom parser in golang</description>
   <url>testUrl</url>
@@ -34,7 +32,7 @@ var examplePom = `
       <comments>comments</comments>
     </license>
   </licenses>
- 
+
   <developers>
     <developer>
       <id>id</id>
@@ -75,7 +73,7 @@ var examplePom = `
       </properties>
     </contributor>
   </contributors>
- 
+
   <mailingLists>
     <mailingList>
       <name>name</name>
@@ -89,16 +87,16 @@ var examplePom = `
 	  </otherArchives>
     </mailingList>
   </mailingLists>
- 
+
   <prerequisites>
     <maven>2.0</maven>
   </prerequisites>
- 
+
   <modules>
 	<module>module1</module>
 	<module>module2</module>
   </modules>
- 
+
   <scm>
     <connection>connection</connection>
     <developerConnection>developerConnection</developerConnection>
@@ -130,7 +128,7 @@ var examplePom = `
       </notifier>
     </notifiers>
   </ciManagement>
- 
+
   <distributionManagement>
     <repository>
       <uniqueVersion>true</uniqueVersion>
@@ -180,13 +178,13 @@ var examplePom = `
     </relocation>
     <status>status</status>
   </distributionManagement>
- 
+
   <properties>
     <key>value</key>
     <key2>value2</key2>
     <key3>value3</key3>
   </properties>
- 
+
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -226,7 +224,7 @@ var examplePom = `
         <optional>optional</optional>
       </dependency>
   </dependencies>
- 
+
   <repositories>
     <repository>
       <releases>
@@ -264,7 +262,7 @@ var examplePom = `
       <layout>layout</layout>
     </pluginRepository>
   </pluginRepositories>
- 
+
   <build>
     <sourceDirectory>sourceDirectory</sourceDirectory>
     <scriptSourceDirectory>scriptSourceDirectory</scriptSourceDirectory>
@@ -397,7 +395,7 @@ var examplePom = `
         </plugin>
     </plugins>
   </build>
- 
+
   <reports/>
   <reporting>
     <excludeDefaults>excludeDefaults</excludeDefaults>
@@ -422,7 +420,7 @@ var examplePom = `
       </plugin>
     </plugins>
   </reporting>
- 
+
   <profiles>
     <profile>
       <id>id</id>
@@ -564,11 +562,11 @@ var examplePom = `
           </plugin>
         </plugins>
       </build>
- 
+
       <modules>
 		<module>module1</module>
       </modules>
- 
+
       <distributionManagement>
         <repository>
           <uniqueVersion>true</uniqueVersion>
@@ -618,13 +616,13 @@ var examplePom = `
         </relocation>
         <status>status</status>
       </distributionManagement>
- 
+
       <properties>
         <key>value</key>
         <key2>value2</key2>
         <key3>value3</key3>
       </properties>
- 
+
       <dependencyManagement>
         <dependencies>
           <dependency>
@@ -663,7 +661,7 @@ var examplePom = `
           <optional>optional</optional>
         </dependency>
       </dependencies>
- 
+
       <repositories>
         <repository>
           <releases>
@@ -700,7 +698,7 @@ var examplePom = `
           <layout>layout</layout>
         </pluginRepository>
       </pluginRepositories>
- 
+
       <reports>
 		<report>report</report>
       </reports>
@@ -730,4 +728,4 @@ var examplePom = `
     </profile>
   </profiles>
 </project>
-`
+

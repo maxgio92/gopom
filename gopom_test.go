@@ -1,27 +1,62 @@
 package gopom
 
 import (
-	"encoding/xml"
-	"fmt"
-	"os"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-var p Project
+const (
+	filename       = "./testdata/example.xml"
+	expectedHeader = `<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">`
+)
 
-func init() {
-	err := xml.Unmarshal([]byte(examplePom), &p)
+func TestParsing(t *testing.T) {
+	p, err := Parse(filename)
 	if err != nil {
-		fmt.Println("unable to parse xml ", err)
-		os.Exit(1)
-		return
+		t.Fatalf("failed parsing the file: %v", err)
+	}
+	testParent(t, p)
+	testProject(t, p)
+	testOrganization(t, p)
+	testLicenses(t, p)
+	testDevelopers(t, p)
+	testContributors(t, p)
+	testMailingLists(t, p)
+	testPrerequisites(t, p)
+	testSCM(t, p)
+	testIssueManagement(t, p)
+	testCIManagement(t, p)
+	testNotifiers(t, p)
+	testDistributionManagement(t, p)
+	testDependencyManagement(t, p)
+	testDependencies(t, p)
+	testRepositories(t, p)
+	testPluginRepositories(t, p)
+	testBuild(t, p)
+	testReporting(t, p)
+	testProfiles(t, p)
+	testParentProperties(t, p)
+	testDeveloperProperties(t, p)
+	testContributorProperties(t, p)
+	testProfileProperties(t, p)
+	testMarshal(t, p)
+}
+
+func testMarshal(t *testing.T, p *Project) {
+	out, err := p.Marshal()
+	if err != nil {
+		t.Errorf("Failed to marshal: %v", err)
+	}
+	if !strings.HasPrefix(string(out), expectedHeader) {
+		t.Errorf("Wanted header: %s, got: %s", expectedHeader, string(out[0:len(expectedHeader)]))
 	}
 }
 
-func TestParsing_Parent(t *testing.T) {
+func testParent(t *testing.T, p *Project) {
 	if p.Parent.ArtifactID != "test-application" {
 		t.Error("Parent.ArtifactID: expected 'test-application', got: " + p.Parent.ArtifactID)
 	}
@@ -36,7 +71,16 @@ func TestParsing_Parent(t *testing.T) {
 	}
 }
 
-func TestParsing_Project(t *testing.T) {
+func testProject(t *testing.T, p *Project) {
+	if want := "http://maven.apache.org/POM/4.0.0"; want != p.Xmlns {
+		t.Errorf("Xmlns: expected %q, got: %q", want, p.Xmlns)
+	}
+	if want := "http://www.w3.org/2001/XMLSchema-instance"; want != p.Xsi {
+		t.Errorf("Xsi: expected %q, got: %q", want, p.Xsi)
+	}
+	if want := "http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"; want != p.SchemaLocation {
+		t.Errorf("SchemaLocation: expected %q, got: %q", want, p.SchemaLocation)
+	}
 	if p.GroupID != "com.test" {
 		t.Error("GroupID: expected 'com.test', got: " + p.GroupID)
 	}
@@ -77,7 +121,7 @@ func TestParsing_Project(t *testing.T) {
 	}
 }
 
-func TestParsing_Organization(t *testing.T) {
+func testOrganization(t *testing.T, p *Project) {
 	if p.Organization.Name != "name" {
 		t.Error("Organization.Name: expected 'name', got: " + p.Organization.Name)
 	}
@@ -86,7 +130,7 @@ func TestParsing_Organization(t *testing.T) {
 	}
 }
 
-func TestParsing_Licenses(t *testing.T) {
+func testLicenses(t *testing.T, p *Project) {
 	if len(*p.Licenses) != 1 {
 		t.Error("Licenses: expected len==1, got: " + strconv.Itoa(len(*p.Licenses)))
 	}
@@ -104,7 +148,7 @@ func TestParsing_Licenses(t *testing.T) {
 	}
 }
 
-func TestParsing_Developers(t *testing.T) {
+func testDevelopers(t *testing.T, p *Project) {
 	if len(*p.Developers) != 1 {
 		t.Error("Developers: expected len==1, got: " + strconv.Itoa(len(*p.Developers)))
 	}
@@ -142,7 +186,7 @@ func TestParsing_Developers(t *testing.T) {
 	}
 }
 
-func TestParse_Contributors(t *testing.T) {
+func testContributors(t *testing.T, p *Project) {
 	if len(*p.Contributors) != 1 {
 		t.Error("Contributors: expected len==1, got: " + strconv.Itoa(len(*p.Contributors)))
 	}
@@ -177,7 +221,7 @@ func TestParse_Contributors(t *testing.T) {
 	}
 }
 
-func TestParse_MailingLists(t *testing.T) {
+func testMailingLists(t *testing.T, p *Project) {
 	if len(*p.MailingLists) != 1 {
 		t.Error("MailingLists: expected len==1, got: " + strconv.Itoa(len(*p.MailingLists)))
 	}
@@ -210,13 +254,13 @@ func TestParse_MailingLists(t *testing.T) {
 	}
 }
 
-func TestParsing_Prerequisites(t *testing.T) {
+func testPrerequisites(t *testing.T, p *Project) {
 	if p.Prerequisites.Maven != "2.0" {
 		t.Error("Prerequisites.Maven: expected '2.0', got: " + p.Prerequisites.Maven)
 	}
 }
 
-func TestParsing_SCM(t *testing.T) {
+func testSCM(t *testing.T, p *Project) {
 	if p.SCM.URL != "url" {
 		t.Error("SCM.URL: expected 'url', got: " + p.SCM.URL)
 	}
@@ -231,7 +275,7 @@ func TestParsing_SCM(t *testing.T) {
 	}
 }
 
-func TestParsing_IssueManagement(t *testing.T) {
+func testIssueManagement(t *testing.T, p *Project) {
 	if p.IssueManagement.URL != "url" {
 		t.Error("IssueManagement.URL: expected 'url', got: " + p.IssueManagement.URL)
 	}
@@ -240,7 +284,7 @@ func TestParsing_IssueManagement(t *testing.T) {
 	}
 }
 
-func TestParsing_CIManagement(t *testing.T) {
+func testCIManagement(t *testing.T, p *Project) {
 	if p.CIManagement.System != "system" {
 		t.Error("CIManagement.System: expected 'system', got: " + p.CIManagement.System)
 	}
@@ -249,7 +293,7 @@ func TestParsing_CIManagement(t *testing.T) {
 	}
 }
 
-func TestParsing_Notifiers(t *testing.T) {
+func testNotifiers(t *testing.T, p *Project) {
 	if len(*p.CIManagement.Notifiers) != 1 {
 		t.Error("CIManagement.Notifiers: expected len==1, got: " + strconv.Itoa(len(*p.CIManagement.Notifiers)))
 	}
@@ -274,7 +318,7 @@ func TestParsing_Notifiers(t *testing.T) {
 	}
 }
 
-func TestParsing_DistributionManagement(t *testing.T) {
+func testDistributionManagement(t *testing.T, p *Project) {
 	assert.Equal(t, "downloadUrl", p.DistributionManagement.DownloadURL)
 	assert.Equal(t, "status", p.DistributionManagement.Status)
 	assert.Equal(t, "name", p.DistributionManagement.Repository.Name)
@@ -318,7 +362,7 @@ func TestParsing_DistributionManagement(t *testing.T) {
 	assert.Equal(t, "name", site.Name)
 }
 
-func TestParsing_DependencyManagement(t *testing.T) {
+func testDependencyManagement(t *testing.T, p *Project) {
 	assert.Equal(t, 1, len(*p.DependencyManagement.Dependencies))
 	d := (*p.DependencyManagement.Dependencies)[0]
 	assert.Equal(t, "groupId", d.GroupID)
@@ -334,7 +378,7 @@ func TestParsing_DependencyManagement(t *testing.T) {
 	assert.Equal(t, "systemPath", d.SystemPath)
 }
 
-func TestParsing_Dependencies(t *testing.T) {
+func testDependencies(t *testing.T, p *Project) {
 	assert.Equal(t, 1, len(*p.Dependencies))
 	d := (*p.Dependencies)[0]
 	assert.Equal(t, "groupId", d.GroupID)
@@ -350,7 +394,7 @@ func TestParsing_Dependencies(t *testing.T) {
 	assert.Equal(t, "systemPath", d.SystemPath)
 }
 
-func TestParsing_Repositories(t *testing.T) {
+func testRepositories(t *testing.T, p *Project) {
 	assert.Equal(t, 1, len(*p.Repositories))
 	r := (*p.Repositories)[0]
 	assert.Equal(t, "id", r.ID)
@@ -365,7 +409,7 @@ func TestParsing_Repositories(t *testing.T) {
 	assert.Equal(t, "updatePolicy", r.Snapshots.UpdatePolicy)
 }
 
-func TestParsing_PluginRepositories(t *testing.T) {
+func testPluginRepositories(t *testing.T, p *Project) {
 	assert.Equal(t, 1, len(*p.PluginRepositories))
 	pr := (*p.PluginRepositories)[0]
 	assert.Equal(t, "id", pr.ID)
@@ -380,7 +424,7 @@ func TestParsing_PluginRepositories(t *testing.T) {
 	assert.Equal(t, "updatePolicy", pr.Snapshots.UpdatePolicy)
 }
 
-func TestParsing_Build(t *testing.T) {
+func testBuild(t *testing.T, p *Project) {
 	b := *p.Build
 	assert.Equal(t, "sourceDirectory", b.SourceDirectory)
 	assert.Equal(t, "scriptSourceDirectory", b.ScriptSourceDirectory)
@@ -471,7 +515,7 @@ func TestParsing_Build(t *testing.T) {
 	assert.Equal(t, "systemPath", d.SystemPath)
 }
 
-func TestParsing_Reporting(t *testing.T) {
+func testReporting(t *testing.T, p *Project) {
 	assert.Equal(t, "excludeDefaults", p.Reporting.ExcludeDefaults)
 	assert.Equal(t, "outputDirectory", p.Reporting.OutputDirectory)
 	assert.Equal(t, "outputDirectory", p.Reporting.OutputDirectory)
@@ -488,7 +532,7 @@ func TestParsing_Reporting(t *testing.T) {
 	assert.Equal(t, "inherited", (*pl[0].ReportSets)[0].Inherited)
 }
 
-func TestParsing_Profiles(t *testing.T) {
+func testProfiles(t *testing.T, p *Project) {
 	assert.Equal(t, 1, len(*p.Profiles))
 	assert.Equal(t, "id", (*p.Profiles)[0].ID)
 	assert.Equal(t, true, (*p.Profiles)[0].Activation.ActiveByDefault)
@@ -696,28 +740,28 @@ func TestParsing_Profiles(t *testing.T) {
 	assert.Equal(t, "inherited", (*repPl[0].ReportSets)[0].Inherited)
 }
 
-func Test_ParsingParentProperties(t *testing.T) {
+func testParentProperties(t *testing.T, p *Project) {
 	assert.Equal(t, 3, len(p.Properties.Entries))
 	assert.Equal(t, "value", p.Properties.Entries["key"])
 	assert.Equal(t, "value2", p.Properties.Entries["key2"])
 	assert.Equal(t, "value3", p.Properties.Entries["key3"])
 }
 
-func Test_ParsingDeveloperProperties(t *testing.T) {
+func testDeveloperProperties(t *testing.T, p *Project) {
 	assert.Equal(t, 3, len((*p.Developers)[0].Properties.Entries))
 	assert.Equal(t, "value", p.Properties.Entries["key"])
 	assert.Equal(t, "value2", p.Properties.Entries["key2"])
 	assert.Equal(t, "value3", p.Properties.Entries["key3"])
 }
 
-func Test_ParsingContributorProperties(t *testing.T) {
+func testContributorProperties(t *testing.T, p *Project) {
 	assert.Equal(t, 3, len((*p.Contributors)[0].Properties.Entries))
 	assert.Equal(t, "value", p.Properties.Entries["key"])
 	assert.Equal(t, "value2", p.Properties.Entries["key2"])
 	assert.Equal(t, "value3", p.Properties.Entries["key3"])
 }
 
-func Test_ParsingProfileProperties(t *testing.T) {
+func testProfileProperties(t *testing.T, p *Project) {
 	assert.Equal(t, 3, len((*p.Profiles)[0].Properties.Entries))
 	assert.Equal(t, "value", p.Properties.Entries["key"])
 	assert.Equal(t, "value2", p.Properties.Entries["key2"])
