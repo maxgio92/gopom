@@ -338,6 +338,8 @@ type PluginManagement struct {
 // When marshalled, it is just:
 // <configuration>
 type Configuration struct {
+	Children         string `xml:"combine.children,attr,omitempty"`
+	Self             string `xml:"combine.self,attr,omitempty"`
 	RawConfiguration string `xml:",innerxml"`
 }
 
