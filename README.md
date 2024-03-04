@@ -1,7 +1,7 @@
 # gopom - a maven pom.xml parser
 
-![Tests](https://github.com/2000Slash/gopom/workflows/Tests/badge.svg)
-![Go Report Card](https://goreportcard.com/badge/github.com/2000Slash/gopom)
+![Tests](https://github.com/chainguard-dev/gopom/workflows/Tests/badge.svg)
+![Go Report Card](https://goreportcard.com/badge/github.com/chainguard-dev/gopom)
 
 gopom is a Golang module to easily parse and work with maven pom.xml files.
 
@@ -9,24 +9,28 @@ Supports the offical pom.xml structure that can be read about [here](https://mav
 
 # Modifications and why
 
-This is forked from: github.com/2000Slash/gopom, but with the mod to round trip the Configuration correctly (for example Plugin.Configuration). Correctly for my use case is not worrying about turning it into modifiable struct, but that it roundtrips correctly (parse, modify some bits, then marshal), should produce a diff that makes sense. With the upstream, it drops a bunch of stuff unless it's a strict key/value list.
+This is forked from: github.com/2000Slash/gopom, but with the mod to round trip the Configuration correctly (for example Plugin.Configuration). Correctly here means it is not worrying about turning it into modifiable struct, but that the entire pom roundtrips correctly (parse, modify some bits, then marshal), should produce a diff that makes sense. With the upstream, it drops a bunch of stuff unless it's a strict key/value list.
+This version also handles ordering correctly in a few places.
 
 
 ## Installation
 
 ```bash
-go get -u github.com/2000Slash/gopom
+go get -u github.com/chainguard-dev/gopom
 ```
 
 
 ## Usage
-To load and parse a pom.xml file it is possible to use the `gopom.Parse(path string)` function which will load the file at the given path and return the parsed pom.  
+
+### Unmarshaling
+
+To load and parse a pom.xml file it is possible to use the `gopom.Parse(path string)` function which will load the file at the given path and return the parsed pom.
 See below for example:
 ```go
 package main
 
 import (
-	"github.com/2000Slash/gopom"
+	"github.com/chainguard-dev/gopom"
 	"log"
 )
 
@@ -40,14 +44,14 @@ func main() {
 }
 ```
 
-If one already has the pom.xml loaded as a string or bytes you can use `encoding/xml` from the standard library.  
+If one already has the pom.xml loaded as a string or bytes you can use `encoding/xml` from the standard library.
 This can be seen below:
 ```go
 package main
 
 import (
 	"encoding/xml"
-	"github.com/2000Slash/gopom"
+	"github.com/chainguard-dev/gopom"
 	"log"
 )
 
@@ -62,7 +66,12 @@ func main() {
 }
 ```
 
-You can also marshal the project back to an xml:
+### Marshaling
+
+You can also marshal the project back to an xml, and for that you *MUST*
+use the `Marshal` function, because of the way things are named, and
+handled.
+
 ```go
 package main
 
@@ -70,7 +79,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/2000Slash/gopom"
+	"github.com/chainguard-dev/gopom"
 )
 
 func main() {

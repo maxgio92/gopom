@@ -332,11 +332,6 @@ type PluginManagement struct {
 // properties, and it does not work. For now, just keep it as a string so we
 // can marshal it out untouched.
 // TODO: This should be a DOM object.
-// TODO: For some reason this loses the following XML attributes (probably all
-// attributes):
-// <configuration combine.children="merge">
-// When marshalled, it is just:
-// <configuration>
 type Configuration struct {
 	Children         string `xml:"combine.children,attr,omitempty"`
 	Self             string `xml:"combine.self,attr,omitempty"`
