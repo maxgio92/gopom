@@ -1,4 +1,4 @@
-module github.com/chainguard-dev/gopom
+module github.com/maxgio92/gopom
 
 go 1.21
 
