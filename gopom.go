@@ -26,21 +26,23 @@ func Parse(path string) (*Project, error) {
 	}
 
 	// Create a dependency cache for O(1) search.
-	project.depCache = make(map[uint64]*Dependency, len(*project.Dependencies))
-	project.depCacheByArtifactID = make(map[uint64]*Dependency, len(*project.Dependencies))
-	for _, dep := range *project.Dependencies {
-		dep := dep
-		hash, err := depHashF(dep.GroupID, dep.ArtifactID)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to calculate hash for dependency")
-		}
-		project.depCache[*hash] = &dep
+	if project.Dependencies != nil {
+		project.depCache = make(map[uint64]*Dependency, len(*project.Dependencies))
+		project.depCacheByArtifactID = make(map[uint64]*Dependency, len(*project.Dependencies))
+		for _, dep := range *project.Dependencies {
+			dep := dep
+			hash, err := depHashF(dep.GroupID, dep.ArtifactID)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to calculate hash for dependency")
+			}
+			project.depCache[*hash] = &dep
 
-		hash, err = depHashF("", dep.ArtifactID)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to calculate hash for dependency")
+			hash, err = depHashF("", dep.ArtifactID)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to calculate hash for dependency")
+			}
+			project.depCacheByArtifactID[*hash] = &dep
 		}
-		project.depCacheByArtifactID[*hash] = &dep
 	}
 
 	return &project, nil
@@ -171,6 +173,9 @@ func (p *Project) Search(groupId, artifactId string) (*Dependency, error) {
 	if hash == nil {
 		return nil, errors.Wrap(err, "failed to hash dependency key")
 	}
+	if p.depCache == nil {
+		return nil, ErrDepCacheEmpty
+	}
 
 	dep, ok := p.depCache[*hash]
 	if !ok {
@@ -188,6 +193,9 @@ func (p *Project) SearchByArtifactID(artifactId string) (*Dependency, error) {
 	}
 	if hash == nil {
 		return nil, errors.Wrap(err, "failed to hash dependency key")
+	}
+	if p.depCache == nil {
+		return nil, ErrDepCacheEmpty
 	}
 
 	dep, ok := p.depCacheByArtifactID[*hash]
