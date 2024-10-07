@@ -44,6 +44,7 @@ func TestParsing(t *testing.T) {
 	testContributorProperties(t, p)
 	testProfileProperties(t, p)
 	testMarshal(t, p)
+	testSearch(t, p)
 }
 
 func testMarshal(t *testing.T, p *Project) {
@@ -379,7 +380,7 @@ func testDependencyManagement(t *testing.T, p *Project) {
 }
 
 func testDependencies(t *testing.T, p *Project) {
-	assert.Equal(t, 1, len(*p.Dependencies))
+	assert.Equal(t, 3, len(*p.Dependencies))
 	d := (*p.Dependencies)[0]
 	assert.Equal(t, "groupId", d.GroupID)
 	assert.Equal(t, "artifactId", d.ArtifactID)
@@ -766,4 +767,16 @@ func testProfileProperties(t *testing.T, p *Project) {
 	assert.Equal(t, "value", p.Properties.Entries["key"])
 	assert.Equal(t, "value2", p.Properties.Entries["key2"])
 	assert.Equal(t, "value3", p.Properties.Entries["key3"])
+}
+
+func testSearch(t *testing.T, p *Project) {
+	dep, err := p.Search("org.example.foo", "foo")
+	assert.Nil(t, err)
+	assert.NotNil(t, dep)
+	assert.Equal(t, "org.example.foo", dep.GroupID)
+	assert.Equal(t, "foo", dep.ArtifactID)
+	assert.Equal(t, "1.0.0", dep.Version)
+	assert.Equal(t, "type", dep.Type)
+	assert.Equal(t, "classifier", dep.Classifier)
+	assert.Equal(t, 1, len(*dep.Exclusions))
 }

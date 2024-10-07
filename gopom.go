@@ -3,8 +3,11 @@ package gopom
 import (
 	"encoding/xml"
 	"fmt"
+	"hash/fnv"
 	"io"
 	"os"
+
+	"github.com/pkg/errors"
 )
 
 func Parse(path string) (*Project, error) {
@@ -21,6 +24,18 @@ func Parse(path string) (*Project, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// Create a dependency cache for O(1) search.
+	project.depCache = make(map[uint64]*Dependency, len(*project.Dependencies))
+	for _, dep := range *project.Dependencies {
+		dep := dep
+		hash, err := depHashF(dep.GroupID, dep.ArtifactID)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to calculate hash for dependency")
+		}
+		project.depCache[*hash] = &dep
+	}
+
 	return &project, nil
 }
 
@@ -87,6 +102,8 @@ type Project struct {
 	Build                  *Build                  `xml:"build,omitempty"`
 	Reporting              *Reporting              `xml:"reporting,omitempty"`
 	Profiles               *[]Profile              `xml:"profiles>profile,omitempty"`
+
+	depCache map[uint64]*Dependency
 }
 
 type Properties struct {
@@ -135,6 +152,36 @@ func (p Properties) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 	}
 
 	return e.Flush()
+}
+
+// Search returns the first match of a dependency keyed by artifactID and groupID.
+func (p *Project) Search(groupId, artifactId string) (*Dependency, error) {
+	hash, err := depHashF(groupId, artifactId)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to hash dependency key")
+	}
+	if hash == nil {
+		return nil, errors.Wrap(err, "failed to hash dependency key")
+	}
+
+	dep, ok := p.depCache[*hash]
+	if !ok {
+		return nil, ErrDepNotFound
+	}
+
+	return dep, nil
+}
+
+func depHashF(groupID, artifactID string) (*uint64, error) {
+	f := fnv.New64a()
+	_, err := f.Write([]byte(fmt.Sprintf("%s:%s", groupID, artifactID)))
+	if err != nil {
+		return nil, err
+	}
+
+	hash := f.Sum64()
+
+	return &hash, nil
 }
 
 type Parent struct {

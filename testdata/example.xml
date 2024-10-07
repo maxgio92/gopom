@@ -223,6 +223,38 @@
         </exclusions>
         <optional>optional</optional>
       </dependency>
+    <dependency>
+      <groupId>org.example.foo</groupId>
+      <artifactId>foo</artifactId>
+      <version>1.0.0</version>
+      <type>type</type>
+      <classifier>classifier</classifier>
+      <scope>scope</scope>
+      <systemPath>systemPath</systemPath>
+      <exclusions>
+        <exclusion>
+          <artifactId>artifactId</artifactId>
+          <groupId>groupId</groupId>
+        </exclusion>
+      </exclusions>
+      <optional>optional</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.example.bar</groupId>
+      <artifactId>foo</artifactId>
+      <version>1.0.1</version>
+      <type>type</type>
+      <classifier>classifier</classifier>
+      <scope>scope</scope>
+      <systemPath>systemPath</systemPath>
+      <exclusions>
+        <exclusion>
+          <artifactId>artifactId</artifactId>
+          <groupId>groupId</groupId>
+        </exclusion>
+      </exclusions>
+      <optional>optional</optional>
+    </dependency>
   </dependencies>
 
   <repositories>
