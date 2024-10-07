@@ -241,7 +241,7 @@
     </dependency>
     <dependency>
       <groupId>org.example.bar</groupId>
-      <artifactId>foo</artifactId>
+      <artifactId>bar</artifactId>
       <version>1.0.1</version>
       <type>type</type>
       <classifier>classifier</classifier>

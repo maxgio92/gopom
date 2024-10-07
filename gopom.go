@@ -27,6 +27,7 @@ func Parse(path string) (*Project, error) {
 
 	// Create a dependency cache for O(1) search.
 	project.depCache = make(map[uint64]*Dependency, len(*project.Dependencies))
+	project.depCacheByArtifactID = make(map[uint64]*Dependency, len(*project.Dependencies))
 	for _, dep := range *project.Dependencies {
 		dep := dep
 		hash, err := depHashF(dep.GroupID, dep.ArtifactID)
@@ -34,6 +35,12 @@ func Parse(path string) (*Project, error) {
 			return nil, errors.Wrap(err, "failed to calculate hash for dependency")
 		}
 		project.depCache[*hash] = &dep
+
+		hash, err = depHashF("", dep.ArtifactID)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to calculate hash for dependency")
+		}
+		project.depCacheByArtifactID[*hash] = &dep
 	}
 
 	return &project, nil
@@ -103,7 +110,8 @@ type Project struct {
 	Reporting              *Reporting              `xml:"reporting,omitempty"`
 	Profiles               *[]Profile              `xml:"profiles>profile,omitempty"`
 
-	depCache map[uint64]*Dependency
+	depCache             map[uint64]*Dependency
+	depCacheByArtifactID map[uint64]*Dependency
 }
 
 type Properties struct {
@@ -165,6 +173,24 @@ func (p *Project) Search(groupId, artifactId string) (*Dependency, error) {
 	}
 
 	dep, ok := p.depCache[*hash]
+	if !ok {
+		return nil, ErrDepNotFound
+	}
+
+	return dep, nil
+}
+
+// SearchByArtifactID returns the first match of a dependency keyed by artifactID.
+func (p *Project) SearchByArtifactID(artifactId string) (*Dependency, error) {
+	hash, err := depHashF("", artifactId)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to hash dependency key")
+	}
+	if hash == nil {
+		return nil, errors.Wrap(err, "failed to hash dependency key")
+	}
+
+	dep, ok := p.depCacheByArtifactID[*hash]
 	if !ok {
 		return nil, ErrDepNotFound
 	}

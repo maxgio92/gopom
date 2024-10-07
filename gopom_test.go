@@ -45,6 +45,7 @@ func TestParsing(t *testing.T) {
 	testProfileProperties(t, p)
 	testMarshal(t, p)
 	testSearch(t, p)
+	testSearchByArtifactID(t, p)
 }
 
 func testMarshal(t *testing.T, p *Project) {
@@ -771,6 +772,18 @@ func testProfileProperties(t *testing.T, p *Project) {
 
 func testSearch(t *testing.T, p *Project) {
 	dep, err := p.Search("org.example.foo", "foo")
+	assert.Nil(t, err)
+	assert.NotNil(t, dep)
+	assert.Equal(t, "org.example.foo", dep.GroupID)
+	assert.Equal(t, "foo", dep.ArtifactID)
+	assert.Equal(t, "1.0.0", dep.Version)
+	assert.Equal(t, "type", dep.Type)
+	assert.Equal(t, "classifier", dep.Classifier)
+	assert.Equal(t, 1, len(*dep.Exclusions))
+}
+
+func testSearchByArtifactID(t *testing.T, p *Project) {
+	dep, err := p.SearchByArtifactID("foo")
 	assert.Nil(t, err)
 	assert.NotNil(t, dep)
 	assert.Equal(t, "org.example.foo", dep.GroupID)
