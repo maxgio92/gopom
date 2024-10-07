@@ -5,5 +5,6 @@ import (
 )
 
 var (
-	ErrDepNotFound = errors.New("dependency not found")
+	ErrDepNotFound   = errors.New("dependency not found")
+	ErrDepCacheEmpty = errors.New("dependency cache empty")
 )
